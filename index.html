@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <script src="js/obj.js"></script>
+    <script src="js/mtl.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+
+    <script>
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000)
+        camera.position.z = 50;
+
+        var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+        renderer.setClearColor("#FFFFFF");
+        renderer.setSize(window.innerWidth,window.innerHeight);
+
+        document.body.appendChild(renderer.domElement);
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth,window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+
+            camera.updateProjectionMatrix();
+        })
+
+        var light = new THREE.PointLight(0xF9F9F9, 1.4, 1000)
+        light.position.set(0,15,15);
+        scene.add(light);
+
+        var ourObj;
+        var ourObj2;
+
+        var mtlLoader = new THREE.MTLLoader();
+        mtlLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/2621168/glass.mtl', function (materials) {
+
+            materials.preload();
+
+            var objLoader = new THREE.OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/2621168/glass.obj', function (object) {
+                scene.add(object);
+                ourObj = object;
+                object.position.z -= 370;
+                object.rotation.x = 250;
+
+            });
+        });
+
+        var mtlLoader = new THREE.MTLLoader();
+        mtlLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/2621168/center.mtl', function (materials) {
+
+            materials.preload();
+
+            var objLoader = new THREE.OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/2621168/center.obj', function (object) {
+                scene.add(object);
+                ourObj2 = object;
+                object.position.z -= 70;
+                object.rotation.x = 250;
+
+                this.tl = new TimelineMax();
+                this.tl.from(ourObj2.scale, 3, {y: 0, x:0, z: 0, ease: Expo.easeOut})
+                this.tl.from(ourObj2.position, 2.5, {y: 0, z: -30,  ease: Expo.easeOut})
+                this.tl.from(ourObj.scale, 10, {x: 1.5, y: 1.5, z: 0, ease: Expo.easeOut}, '-=1')
+                this.tl.from(ourObj.position, 1, {y: -20, ease: Expo.easeOut}, '-=3')
+            });
+        });
+        
+
+
+
+        var render = function() {
+            requestAnimationFrame(render);
+            
+            ourObj.rotation.z -= .02;
+            ourObj2.rotation.z += .03;
+
+            renderer.render(scene, camera);
+        }
+
+        render();
+
+    </script>
+
+</body>
+
+</html>
